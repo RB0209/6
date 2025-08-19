@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Stories of Six Lives — Portrait Morph (Accessible • Optimized)</title>
 
-  <!-- Dev note: CDN is fine for demos. For production, install Tailwind via PostCSS/CLI. -->
+  <!-- NOTE: CDN Tailwind is fine for demos. For production, install Tailwind via PostCSS/CLI. -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Inline favicon to avoid 404s -->
+  <!-- Inline favicon to avoid 404 -->
   <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="%2369339c"/><stop offset="1" stop-color="%23fde047"/></linearGradient></defs><rect width="64" height="64" rx="12" fill="url(%23g)"/><text x="32" y="40" text-anchor="middle" font-size="28" font-family="Arial" fill="white">6</text></svg>'/>
 
   <style>
@@ -181,6 +181,8 @@
   </section>
 
   <script>
+  "use strict";
+
   /* ========= UTIL ========= */
   const $ = sel => document.querySelector(sel);
   const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -234,9 +236,8 @@
       ox += vx; oy += vy; vx *= .96; vy *= .96;
       draw(ctx1, st1, ox, oy);
       draw(ctx2, st2, ox*1.35, oy*1.35);
-      rafId = requestAnimationFrame(anim);
+      requestAnimationFrame(anim);
     }
-    let rafId = null;
     if(!prefersReduced){ anim(); }
 
     addEventListener('mousemove', e=>{
@@ -265,7 +266,7 @@
   const skipBtn = document.getElementById('skipIntro');
 
   function revealHub(){
-    // Guard: Prevent double-runs
+    // Prevent double-run
     if (intro.style.display === 'none') return;
 
     intro.style.display='none';
@@ -284,7 +285,7 @@
   enter.addEventListener('click', revealHub);
   skipBtn.addEventListener('click', revealHub);
 
-  // Also allow keyboard Enter from anywhere on the intro
+  // Allow Enter from anywhere while intro visible
   addEventListener('keydown', (e)=>{
     if(e.key === 'Enter' && intro.style.display !== 'none'){
       e.preventDefault();
@@ -601,6 +602,17 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
     else if(!e.shiftKey && document.activeElement === lastF){ e.preventDefault(); firstF.focus(); }
   }
   function releaseFocusTrap(){ focusables=[]; firstF=null; lastF=null; }
+
+  // Quiet placeholder retained: load progress badges (no-op if elements not present)
+  (function loadProgress(){
+    for(let i=1;i<=6;i++){
+      try{
+        const val = localStorage.getItem('char'+i) || '';
+        const el = document.querySelector('.cont-'+i);
+        if(el) el.textContent = val ? val : '—';
+      }catch{}
+    }
+  })();
   </script>
 </body>
 </html>
