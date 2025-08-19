@@ -37,7 +37,6 @@
 
     /* ROW LAYOUT */
     .char-row{display:flex; gap:1rem; align-items:center; max-width:1100px; margin:1.4rem auto; padding:0 1rem; position:relative; z-index:1}
-    /* Portrait is now a real button for a11y */
     .portrait{
       flex:0 0 170px; aspect-ratio:2/3; border-radius:1rem; position:relative; overflow:hidden;
       background:var(--card); box-shadow:0 20px 60px rgba(0,0,0,.6);
@@ -69,7 +68,6 @@
     .ep-card{flex:0 0 220px; border-radius:.75rem; padding:.7rem; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); transition: transform .2s ease, box-shadow .2s ease}
     .ep-card:hover{transform: translateY(-4px); box-shadow:0 18px 48px rgba(0,0,0,.55)}
     .ep-title{font-weight:700; margin:0}
-    /* subtle scroll hint */
     .scroll-hint:after{
       content:""; position:absolute; right:0; top:0; bottom:0; width:48px;
       background:linear-gradient(90deg, transparent, rgba(6,6,7,.9));
@@ -116,7 +114,6 @@
     }
     @media (max-width:480px){ .portrait{width:64%} }
 
-    /* High-contrast tweak for yellow on dark */
     .text-accent{color:#f8e36c}
   </style>
 </head>
@@ -206,7 +203,7 @@
           y: Math.random()*innerHeight,
           r: Math.random()*radiusVar + radiusMin,
           s: speed * (.6 + Math.random()),
-          a: 0.35 + Math.random()*0.4 // fixed alpha (no flicker)
+          a: 0.35 + Math.random()*0.4
         });
       }
     }
@@ -249,13 +246,12 @@
       }
     }, 100));
 
-    // Reduce motion: static starfield
     if(prefersReduced){
       draw(ctx1, st1, 0, 0); draw(ctx2, st2, 0, 0);
     }
   })();
 
-  /* ========= INTRO (no forced timeout) ========= */
+  /* ========= INTRO ========= */
   const intro = document.getElementById('intro');
   const hub = document.getElementById('hub');
   const enter = document.getElementById('enter');
@@ -265,7 +261,6 @@
     intro.style.display='none';
     hub.hidden=false; hub.style.opacity='0'; hub.style.transition='opacity .35s ease';
     requestAnimationFrame(()=> hub.style.opacity='1');
-    // move focus to first portrait for accessibility
     setTimeout(()=>{ const firstPortrait = document.querySelector('.portrait'); firstPortrait?.focus(); }, 60);
   }
   enter.addEventListener('click', revealHub);
@@ -391,7 +386,6 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
       });
 
       if (prefersReduced) {
-        // No animation for reduced motion
         render();
         panel.classList.remove('closed');
         panel.dataset.open='true';
@@ -497,7 +491,6 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
   const savedRS = parseFloat(localStorage.getItem('readerRS') || '1');
   setRS(savedRS);
 
-  // keydown handler scoped to the reader
   function onReaderKeydown(e){
     if(!reader.classList.contains('active')) return;
     if(e.key==='ArrowRight') readerNext.click();
@@ -510,10 +503,10 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
     currentChar = charId; currentIdx = idx;
     reader.classList.add('active');
     reader.setAttribute('aria-hidden','false');
-    document.documentElement.style.overflow='hidden'; // lock scroll
+    document.documentElement.style.overflow='hidden';
     lastFocused = document.activeElement;
     renderReader();
-    trapFocusStart(); // focus trap
+    trapFocusStart();
     addEventListener('keydown', onReaderKeydown);
   }
   function closeReader(){
@@ -525,30 +518,28 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
     lastFocused?.focus();
   }
 
-  // renderReader now builds safe DOM nodes for the body (no innerHTML injection)
   function renderReader(){
     const d = data[currentChar];
     const c = d.chapters[currentIdx] || {title:'', body:''};
     readerTitle.textContent = c.title || '—';
     document.getElementById('readerMeta').textContent = d.teaser || '';
+    readerLabel.textContent = d.name || '';
 
-    // Clear body and append paragraphs
+    // Safe body rendering
     readerBody.innerHTML = '';
     const paragraphs = String(c.body || '').split(/\n{2,}/);
     for(const seg of paragraphs){
       const p = document.createElement('p');
-      // Collapse single newlines inside paragraph segments to spaces
       p.textContent = seg.replace(/\n/g, ' ');
       readerBody.appendChild(p);
     }
 
     const pct = ((currentIdx+1)/(d.chapters.length || 1))*100;
     prog.style.width = pct + '%';
-    // debounced progress
     saveProgress();
     readerExit.focus();
 
-    // refresh focusables each time content changes
+    // refresh focusables when content changes
     trapFocusStart(true);
   }
   const saveProgress = debounce(()=>{ try{ localStorage.setItem('char'+currentChar, data[currentChar].chapters[currentIdx]?.title || ''); }catch{} }, 150);
@@ -580,8 +571,6 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
     else if(!e.shiftKey && document.activeElement === lastF){ e.preventDefault(); firstF.focus(); }
   }
   function releaseFocusTrap(){ focusables=[]; firstF=null; lastF=null; }
-
-  // removed leftover progress badge loader (no .cont-x elements in DOM)
   </script>
 </body>
 </html>
