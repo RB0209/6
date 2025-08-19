@@ -28,20 +28,7 @@
     .starfield{position:fixed; inset:0; pointer-events:none; z-index:0}
     .vignette:before{content:""; position:fixed; inset:0; pointer-events:none; box-shadow: inset 0 0 220px rgba(0,0,0,.7)}
 
-    /* INTRO */
-    .intro-gradient{
-      background:
-        radial-gradient(1200px 600px at 50% 40%, rgba(253,224,71,0.12), transparent 60%),
-        radial-gradient(900px 600px at 70% 70%, rgba(105,51,156,0.25), transparent 60%),
-        #000;
-    }
-    .intro-title{letter-spacing:.08em; filter: drop-shadow(0 10px 30px rgba(253,224,71,.25))}
-    @media (prefers-reduced-motion:no-preference){
-      @keyframes titleIn{0%{opacity:0; transform: translateY(24px) scale(1.06)}60%{opacity:1}100%{transform:translateY(0) scale(1)}}
-      .animate-titleIn{animation:titleIn 1.2s ease both}
-    }
-
-    /* ROW LAYOUT */
+    /* HUB + CARDS */
     .char-row{display:flex; gap:1rem; align-items:center; max-width:1100px; margin:1.4rem auto; padding:0 1rem; position:relative; z-index:1}
     .portrait{
       flex:0 0 170px; aspect-ratio:2/3; border-radius:1rem; position:relative; overflow:hidden;
@@ -56,7 +43,6 @@
     .portrait h3{position:absolute; left:1rem; bottom:1rem; right:1rem; font-size:1rem; font-weight:800; line-height:1.15; margin:0}
     .portrait.focused{transform: translateY(-6px) scale(.99); filter:brightness(.98)}
 
-    /* PREVIEW PANEL */
     .chap-panel{flex:1; min-height:220px; display:flex; align-items:center; justify-content:center; position:relative; transition:opacity .25s ease, transform .25s ease}
     .chap-panel.closed{opacity:0; transform: translateX(12px); pointer-events:none}
     .chap-frame{
@@ -128,23 +114,8 @@
   <canvas id="starsFront" class="starfield"></canvas>
   <div class="vignette"></div>
 
-  <!-- INTRO -->
-  <section id="intro" class="intro-gradient fixed inset-0 flex flex-col items-center justify-center text-center z-20" aria-labelledby="introTitle">
-    <div class="px-6">
-      <h1 id="introTitle" class="intro-title text-4xl md:text-6xl font-extrabold animate-titleIn">
-        Stories of <span class="text-accent">Six</span> Lives
-      </h1>
-      <p class="mt-4 text-sm md:text-lg text-gray-300">Six souls. Six timelines. One universe.</p>
-      <div class="mt-6 flex gap-3 justify-center">
-        <button id="enter" type="button" class="btn" aria-describedby="introHelp">Enter</button>
-        <button id="skipIntro" type="button" class="btn">Skip intro</button>
-      </div>
-      <p id="introHelp" class="mt-2 text-xs text-gray-400">Press Enter or click to continue</p>
-    </div>
-  </section>
-
-  <!-- HUB -->
-  <main id="hub" class="hub pt-24 pb-20" hidden aria-live="polite">
+  <!-- HUB (intro removed; hub is visible by default) -->
+  <main id="hub" class="hub pt-24 pb-20" aria-live="polite">
     <header class="max-w-[1100px] mx-auto px-4 pb-4 flex justify-between items-center text-accent">
       <h2 class="text-2xl font-semibold">Characters</h2>
       <div class="text-sm text-gray-400">Dark • Cinematic</div>
@@ -258,40 +229,6 @@
       draw(ctx1, st1, 0, 0); draw(ctx2, st2, 0, 0);
     }
   })();
-
-  /* ========= INTRO ========= */
-  const intro = document.getElementById('intro');
-  const hub = document.getElementById('hub');
-  const enter = document.getElementById('enter');
-  const skipBtn = document.getElementById('skipIntro');
-
-  function revealHub(){
-    // Prevent double-run
-    if (intro.style.display === 'none') return;
-
-    intro.style.display='none';
-    hub.hidden=false;
-    hub.style.opacity='0';
-    hub.style.transition='opacity .35s ease';
-    requestAnimationFrame(()=> hub.style.opacity='1');
-
-    // move focus to first portrait for accessibility
-    setTimeout(()=>{
-      const firstPortrait = document.querySelector('.portrait');
-      if (firstPortrait) firstPortrait.focus();
-    }, 60);
-  }
-
-  enter.addEventListener('click', revealHub);
-  skipBtn.addEventListener('click', revealHub);
-
-  // Allow Enter from anywhere while intro visible
-  addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter' && intro.style.display !== 'none'){
-      e.preventDefault();
-      revealHub();
-    }
-  });
 
   /* ========= DATA ========= */
   const data = {
@@ -613,6 +550,12 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
       }catch{}
     }
   })();
+
+  // After DOM build, focus first portrait for a11y
+  window.addEventListener('load', ()=>{
+    const firstPortrait = document.querySelector('.portrait');
+    if (firstPortrait) firstPortrait.focus();
+  });
   </script>
 </body>
 </html>
