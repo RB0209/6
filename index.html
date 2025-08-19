@@ -4,7 +4,13 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Stories of Six Lives — Portrait Morph (Accessible • Optimized)</title>
+
+  <!-- Dev note: CDN is fine for demos. For production, install Tailwind via PostCSS/CLI. -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Inline favicon to avoid 404s -->
+  <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="%2369339c"/><stop offset="1" stop-color="%23fde047"/></linearGradient></defs><rect width="64" height="64" rx="12" fill="url(%23g)"/><text x="32" y="40" text-anchor="middle" font-size="28" font-family="Arial" fill="white">6</text></svg>'/>
+
   <style>
     :root{
       --primary:#69339c;
@@ -130,8 +136,8 @@
       </h1>
       <p class="mt-4 text-sm md:text-lg text-gray-300">Six souls. Six timelines. One universe.</p>
       <div class="mt-6 flex gap-3 justify-center">
-        <button id="enter" class="btn" aria-describedby="introHelp">Enter</button>
-        <button id="skipIntro" class="btn">Skip intro</button>
+        <button id="enter" type="button" class="btn" aria-describedby="introHelp">Enter</button>
+        <button id="skipIntro" type="button" class="btn">Skip intro</button>
       </div>
       <p id="introHelp" class="mt-2 text-xs text-gray-400">Press Enter or click to continue</p>
     </div>
@@ -151,12 +157,12 @@
     <div class="screen">
       <div class="reader-head">
         <div class="flex items-center gap-2">
-          <button id="readerExit" class="btn" aria-label="Close reader">Exit</button>
+          <button id="readerExit" type="button" class="btn" aria-label="Close reader">Exit</button>
           <div id="readerLabel" class="font-bold"></div>
         </div>
         <div class="reader-controls">
-          <button id="readerPrev" class="btn" aria-label="Previous chapter">Prev</button>
-          <button id="readerNext" class="btn" aria-label="Next chapter">Next</button>
+          <button id="readerPrev" type="button" class="btn" aria-label="Previous chapter">Prev</button>
+          <button id="readerNext" type="button" class="btn" aria-label="Next chapter">Next</button>
         </div>
       </div>
       <article class="reader-article">
@@ -165,12 +171,13 @@
         <div id="readerBody"></div>
       </article>
     </div>
-    <div id="readerControls" class="fixed left-1/2 -translate-x-1/2 bottom-3 z-20 flex gap-2">
-      <button id="sm" class="btn" aria-label="Small font">A-</button>
-      <button id="md" class="btn" aria-label="Medium font">A</button>
-      <button id="lg" class="btn" aria-label="Large font">A+</button>
-    </div>
     <div class="progress"><span id="prog"></span></div>
+
+    <div id="readerControls" class="fixed left-1/2 -translate-x-1/2 bottom-3 z-20 flex gap-2">
+      <button id="sm" type="button" class="btn" aria-label="Small font">A-</button>
+      <button id="md" type="button" class="btn" aria-label="Medium font">A</button>
+      <button id="lg" type="button" class="btn" aria-label="Large font">A+</button>
+    </div>
   </section>
 
   <script>
@@ -202,13 +209,13 @@
           x: Math.random()*innerWidth,
           y: Math.random()*innerHeight,
           r: Math.random()*radiusVar + radiusMin,
-          s: speed * (.6 + Math.random()),
+          s: speed * (0.6 + Math.random()),
           a: 0.35 + Math.random()*0.4
         });
       }
     }
-    make(st1, 90, .10);
-    make(st2, 45, .22);
+    make(st1, 90, 0.10);
+    make(st2, 45, 0.22);
 
     let ox=0, oy=0, vx=0, vy=0;
     function draw(ctx, arr, mx, my){
@@ -240,7 +247,7 @@
 
     addEventListener('resize', debounce(()=>{
       ctx1 = setup(S1); ctx2 = setup(S2);
-      make(st1, 90, .10); make(st2, 45, .22);
+      make(st1, 90, 0.10); make(st2, 45, 0.22);
       if(prefersReduced){
         draw(ctx1, st1, 0, 0); draw(ctx2, st2, 0, 0);
       }
@@ -258,14 +265,32 @@
   const skipBtn = document.getElementById('skipIntro');
 
   function revealHub(){
+    // Guard: Prevent double-runs
+    if (intro.style.display === 'none') return;
+
     intro.style.display='none';
-    hub.hidden=false; hub.style.opacity='0'; hub.style.transition='opacity .35s ease';
+    hub.hidden=false;
+    hub.style.opacity='0';
+    hub.style.transition='opacity .35s ease';
     requestAnimationFrame(()=> hub.style.opacity='1');
-    setTimeout(()=>{ const firstPortrait = document.querySelector('.portrait'); firstPortrait?.focus(); }, 60);
+
+    // move focus to first portrait for accessibility
+    setTimeout(()=>{
+      const firstPortrait = document.querySelector('.portrait');
+      if (firstPortrait) firstPortrait.focus();
+    }, 60);
   }
+
   enter.addEventListener('click', revealHub);
   skipBtn.addEventListener('click', revealHub);
-  addEventListener('keydown', (e)=>{ if(e.key==='Enter' && intro.style.display!=='none'){ revealHub(); }});
+
+  // Also allow keyboard Enter from anywhere on the intro
+  addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' && intro.style.display !== 'none'){
+      e.preventDefault();
+      revealHub();
+    }
+  });
 
   /* ========= DATA ========= */
   const data = {
@@ -334,8 +359,8 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
           <div class="preview-teaser"></div>
         </div>
         <div class="flex gap-2 items-center">
-          <button class="btn open-full">Read</button>
-          <button class="btn close-panel" aria-label="Close preview">Close</button>
+          <button class="btn open-full" type="button">Read</button>
+          <button class="btn close-panel" type="button" aria-label="Close preview">Close</button>
         </div>
       </div>
       <div class="preview-episodes relative scroll-hint" aria-label="Episode list"></div>
@@ -361,6 +386,7 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
       (data[id].chapters || []).forEach((c,i)=>{
         const ep = document.createElement('button');
         ep.className = 'ep-card';
+        ep.type = 'button';
         ep.setAttribute('aria-label', `Open ${c.title}`);
         ep.innerHTML = `<p class="ep-title">${c.title}</p>`;
         ep.addEventListener('click', ()=>{ idx=i; render(); openReader(parseInt(id,10), idx); });
@@ -380,8 +406,10 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
           cp.classList.add('closed');
           cp.dataset.open='false';
           const otherP = cp.parentElement.querySelector('.portrait');
-          otherP?.classList.remove('focused');
-          otherP?.setAttribute('aria-expanded','false');
+          if (otherP){
+            otherP.classList.remove('focused');
+            otherP.setAttribute('aria-expanded','false');
+          }
         }
       });
 
@@ -515,7 +543,7 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
     document.documentElement.style.overflow='';
     releaseFocusTrap();
     removeEventListener('keydown', onReaderKeydown);
-    lastFocused?.focus();
+    if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
   }
 
   function renderReader(){
@@ -525,7 +553,7 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
     document.getElementById('readerMeta').textContent = d.teaser || '';
     readerLabel.textContent = d.name || '';
 
-    // Safe body rendering
+    // Safe body rendering (preserves paragraphs)
     readerBody.innerHTML = '';
     const paragraphs = String(c.body || '').split(/\n{2,}/);
     for(const seg of paragraphs){
@@ -537,6 +565,8 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
     const pct = ((currentIdx+1)/(d.chapters.length || 1))*100;
     prog.style.width = pct + '%';
     saveProgress();
+
+    // focus first control
     readerExit.focus();
 
     // refresh focusables when content changes
