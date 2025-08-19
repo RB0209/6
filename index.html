@@ -3,10 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Stories of Six Lives — Portrait Morph (Accessible • Optimized)</title>
-
-  <!-- NOTE: CDN Tailwind is fine for demos. For production, install Tailwind via PostCSS/CLI. -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Stories of Six Lives — Portrait Morph (Pure CSS • Accessible)</title>
 
   <!-- Inline favicon to avoid 404 -->
   <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="%2369339c"/><stop offset="1" stop-color="%23fde047"/></linearGradient></defs><rect width="64" height="64" rx="12" fill="url(%23g)"/><text x="32" y="40" text-anchor="middle" font-size="28" font-family="Arial" fill="white">6</text></svg>'/>
@@ -24,11 +21,18 @@
       background:var(--bg); color:#fff; margin:0; overflow-x:hidden;
     }
 
+    /* LAYOUT HELPERS */
+    .container{max-width:1100px; margin:0 auto; padding:0 1rem}
+    .hub{padding-top:6rem; padding-bottom:5rem}
+    .hub-header{display:flex; justify-content:space-between; align-items:center; color:var(--accent); padding-bottom:1rem}
+    .hub-header h2{font-size:2rem; font-weight:600; margin:0}
+    .hub-sub{font-size:.9rem; color:#9ca3af}
+
     /* STARFIELD */
     .starfield{position:fixed; inset:0; pointer-events:none; z-index:0}
     .vignette:before{content:""; position:fixed; inset:0; pointer-events:none; box-shadow: inset 0 0 220px rgba(0,0,0,.7)}
 
-    /* HUB + CARDS */
+    /* ROW + CARDS */
     .char-row{display:flex; gap:1rem; align-items:center; max-width:1100px; margin:1.4rem auto; padding:0 1rem; position:relative; z-index:1}
     .portrait{
       flex:0 0 170px; aspect-ratio:2/3; border-radius:1rem; position:relative; overflow:hidden;
@@ -56,8 +60,8 @@
     .preview-head{display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem}
     .preview-title{font-size:1.2rem; font-weight:800; margin:0}
     .preview-teaser{color:#e6d98f; margin-top:.25rem; font-size:.95rem; max-width:60ch; line-height:1.25}
-    .preview-episodes{display:flex; gap:.6rem; margin-top:.9rem; padding-bottom:.6rem; overflow:auto; scroll-behavior:smooth}
-    .ep-card{flex:0 0 220px; border-radius:.75rem; padding:.7rem; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); transition: transform .2s ease, box-shadow .2s ease}
+    .preview-episodes{display:flex; gap:.6rem; margin-top:.9rem; padding-bottom:.6rem; overflow:auto; scroll-behavior:smooth; position:relative}
+    .ep-card{flex:0 0 220px; border-radius:.75rem; padding:.7rem; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); transition: transform .2s ease, box-shadow .2s ease; cursor:pointer}
     .ep-card:hover{transform: translateY(-4px); box-shadow:0 18px 48px rgba(0,0,0,.55)}
     .ep-title{font-weight:700; margin:0}
     .scroll-hint:after{
@@ -65,6 +69,10 @@
       background:linear-gradient(90deg, transparent, rgba(6,6,7,.9));
       pointer-events:none;
     }
+
+    /* BUTTONS */
+    .btn{display:inline-flex; align-items:center; gap:.5rem; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05); padding:.5rem .75rem; border-radius:.65rem; color:#fff; cursor:pointer}
+    .btn:focus{outline:2px solid var(--accent); outline-offset:2px}
 
     /* MORPH CLONE */
     .morph-clone{
@@ -92,8 +100,7 @@
     .reader-controls{display:flex; gap:.5rem; align-items:center}
     .progress{position:fixed; left:0; right:0; bottom:0; height:6px; background:rgba(255,255,255,.06)}
     .progress>span{display:block; height:100%; width:0; background: linear-gradient(90deg, var(--primary), var(--accent))}
-    .btn{display:inline-flex; align-items:center; gap:.5rem; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.05); padding:.5rem .75rem; border-radius:.65rem}
-    .btn:focus{outline:2px solid var(--accent); outline-offset:2px}
+    .reader-floating-controls{position:fixed; left:50%; transform:translateX(-50%); bottom:.75rem; z-index:20; display:flex; gap:.5rem}
 
     /* RESPONSIVE */
     @media (max-width:920px){ .chap-frame{width:calc(100% - 20px)} .char-row{padding:0 .75rem} }
@@ -105,8 +112,6 @@
       .morph-clone{transition: transform .4s cubic-bezier(.22,1,.36,1), opacity .2s}
     }
     @media (max-width:480px){ .portrait{width:64%} }
-
-    .text-accent{color:#f8e36c}
   </style>
 </head>
 <body>
@@ -115,10 +120,10 @@
   <div class="vignette"></div>
 
   <!-- HUB (intro removed; hub is visible by default) -->
-  <main id="hub" class="hub pt-24 pb-20" aria-live="polite">
-    <header class="max-w-[1100px] mx-auto px-4 pb-4 flex justify-between items-center text-accent">
-      <h2 class="text-2xl font-semibold">Characters</h2>
-      <div class="text-sm text-gray-400">Dark • Cinematic</div>
+  <main id="hub" class="hub" aria-live="polite">
+    <header class="hub-header container">
+      <h2>Characters</h2>
+      <div class="hub-sub">Dark • Cinematic</div>
     </header>
     <div id="rows"></div>
   </main>
@@ -127,7 +132,7 @@
   <section id="reader" class="reader" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="readerTitle">
     <div class="screen">
       <div class="reader-head">
-        <div class="flex items-center gap-2">
+        <div style="display:flex;align-items:center;gap:.5rem;">
           <button id="readerExit" type="button" class="btn" aria-label="Close reader">Exit</button>
           <div id="readerLabel" class="font-bold"></div>
         </div>
@@ -144,7 +149,7 @@
     </div>
     <div class="progress"><span id="prog"></span></div>
 
-    <div id="readerControls" class="fixed left-1/2 -translate-x-1/2 bottom-3 z-20 flex gap-2">
+    <div id="readerControls" class="reader-floating-controls">
       <button id="sm" type="button" class="btn" aria-label="Small font">A-</button>
       <button id="md" type="button" class="btn" aria-label="Medium font">A</button>
       <button id="lg" type="button" class="btn" aria-label="Large font">A+</button>
@@ -296,12 +301,12 @@ Meera, her dearest friend, hearing the news that Selah was back, rushed to pick 
           <h3 class="preview-title"></h3>
           <div class="preview-teaser"></div>
         </div>
-        <div class="flex gap-2 items-center">
+        <div style="display:flex;gap:.5rem;align-items:center;">
           <button class="btn open-full" type="button">Read</button>
           <button class="btn close-panel" type="button" aria-label="Close preview">Close</button>
         </div>
       </div>
-      <div class="preview-episodes relative scroll-hint" aria-label="Episode list"></div>
+      <div class="preview-episodes scroll-hint" aria-label="Episode list"></div>
     `;
 
     panel.appendChild(frame);
